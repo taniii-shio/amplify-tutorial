@@ -2,35 +2,38 @@
 // this is an auto generated file. This will be overwritten
 
 export const onCreateTodo = /* GraphQL */ `
-  subscription OnCreateTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onCreateTodo(filter: $filter) {
+  subscription OnCreateTodo($owner: String) {
+    onCreateTodo(owner: $owner) {
       id
       name
       description
       createdAt
       updatedAt
+      owner
     }
   }
 `;
 export const onUpdateTodo = /* GraphQL */ `
-  subscription OnUpdateTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onUpdateTodo(filter: $filter) {
+  subscription OnUpdateTodo($owner: String) {
+    onUpdateTodo(owner: $owner) {
       id
       name
       description
       createdAt
       updatedAt
+      owner
     }
   }
 `;
 export const onDeleteTodo = /* GraphQL */ `
-  subscription OnDeleteTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onDeleteTodo(filter: $filter) {
+  subscription OnDeleteTodo($owner: String) {
+    onDeleteTodo(owner: $owner) {
       id
       name
       description
       createdAt
       updatedAt
+      owner
     }
   }
 `;
