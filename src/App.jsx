@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Amplify, { API, graphqlOperation } from "aws-amplify";
+import Amplify, { API } from "aws-amplify";
 import { withAuthenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
 
@@ -10,7 +10,7 @@ Amplify.configure(awsExports);
 
 const initialState = { name: "", description: "" };
 
-const App = () => {
+const App = ({ signOut, user }) => {
   const [formState, setFormState] = useState(initialState);
   const [todos, setTodos] = useState([]);
 
@@ -24,7 +24,10 @@ const App = () => {
 
   const fetchTodos = async () => {
     try {
-      const todoData = await API.graphql(graphqlOperation(listTodos));
+      const todoData = await API.graphql({
+        query: listTodos,
+        authMode: "AMAZON_COGNITO_USER_POOLS",
+      });
       const todos = todoData.data.listTodos.items;
       setTodos(todos);
     } catch (err) {
@@ -38,7 +41,11 @@ const App = () => {
       const todo = { ...formState };
       setTodos([...todos, todo]);
       setFormState(initialState);
-      await API.graphql(graphqlOperation(createTodo, { input: todo }));
+      await API.graphql({
+        query: createTodo,
+        variables: { input: todo },
+        authMode: "AMAZON_COGNITO_USER_POOLS",
+      });
     } catch (err) {
       console.log("error creating todo:", err);
     }
@@ -47,27 +54,39 @@ const App = () => {
   return (
     <div style={styles.container}>
       <h2>Amplify Todos</h2>
-      <input
-        onChange={(event) => setInput("name", event.target.value)}
-        style={styles.input}
-        value={formState.name}
-        placeholder="Name"
-      />
-      <input
-        onChange={(event) => setInput("description", event.target.value)}
-        style={styles.input}
-        value={formState.description}
-        placeholder="Description"
-      />
-      <button style={styles.button} onClick={addTodo}>
-        Create Todo
-      </button>
-      {todos.map((todo, index) => (
-        <div key={todo.id ? todo.id : index} style={styles.todo}>
-          <p style={styles.todoName}>{todo.name}</p>
-          <p style={styles.todoDescription}>{todo.description}</p>
-        </div>
-      ))}
+      {user ? (
+        <>
+          <div style={styles.userinfoWrapper}>
+            <h3>user : {user.username}</h3>
+            <button style={styles.signoutButton} onClick={signOut}>
+              sign out
+            </button>
+          </div>
+          <input
+            onChange={(event) => setInput("name", event.target.value)}
+            style={styles.input}
+            value={formState.name}
+            placeholder="Name"
+          />
+          <input
+            onChange={(event) => setInput("description", event.target.value)}
+            style={styles.input}
+            value={formState.description}
+            placeholder="Description"
+          />
+          <button style={styles.button} onClick={addTodo}>
+            Create Todo
+          </button>
+          {todos.map((todo, index) => (
+            <div key={todo.id ? todo.id : index} style={styles.todo}>
+              <p style={styles.todoName}>{todo.name}</p>
+              <p style={styles.todoDescription}>{todo.description}</p>
+            </div>
+          ))}
+        </>
+      ) : (
+        <h3>権限がありません</h3>
+      )}
     </div>
   );
 };
@@ -80,6 +99,23 @@ const styles = {
     flexDirection: "column",
     justifyContent: "center",
     padding: 20,
+  },
+  userinfoWrapper: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  signoutButton: {
+    backgroundColor: "black",
+    color: "white",
+    outline: "none",
+    fontSize: 18,
+    padding: "12px 0px",
+    height: "40px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: "20px",
   },
   todo: { marginBottom: 15 },
   input: {
